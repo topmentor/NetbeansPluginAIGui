@@ -1,0 +1,13 @@
+target/
+*.class
+*.iml
+.claude/
+nbproject/private/
+build/
+dist/
+*.jar
+*.nbm
+CLAUDE.md
+AGENTS.md
+
+
