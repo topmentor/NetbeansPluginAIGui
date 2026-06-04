@@ -263,6 +263,9 @@ public final class ClaudePromptPanel extends JPanel {
         area.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                if (e.isConsumed()) {
+                    return;
+                }
                 // Shift+Tab → cycle edit mode
                 if (e.getKeyCode() == KeyEvent.VK_TAB && e.isShiftDown()) {
                     e.consume();
