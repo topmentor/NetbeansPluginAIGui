@@ -1052,12 +1052,13 @@ public class ClaudeSessionTab extends TopComponent
         int saved = NbPreferences.forModule(ClaudeSessionTab.class)
                 .getInt(getSavedCardKeyFor(card), -1);
         int bottom = computeBottomHeight(card, total, saved, legacyPromptHeight,
-                southCard.getPreferredSize().height);
+                southCard.getPreferredSize().height, southCard.getMinimumSize().height);
         int divLoc = total - splitPane.getDividerSize() - bottom;
         LOG.fine(sessionTag + "[applyDivider] card=" + card
                 + " total=" + total + " saved=" + saved
                 + " legacy=" + legacyPromptHeight
                 + " preferred=" + southCard.getPreferredSize().height
+                + " minimum=" + southCard.getMinimumSize().height
                 + " bottom=" + bottom + " divLoc=" + divLoc);
         if (divLoc >= 0) splitPane.setDividerLocation(divLoc);
         return bottom;
@@ -1072,13 +1073,18 @@ public class ClaudeSessionTab extends TopComponent
      * @param saved             persisted height (negative means not saved)
      * @param legacyPromptHeight "bottomHeight" pref value for backward-compat (negative to skip)
      * @param preferredHeight   southCard preferred height (fallback)
+     * @param minimumHeight     southCard minimum height, used to avoid clipping prompt controls
      */
     static int computeBottomHeight(String card, int total, int saved,
-                                   int legacyPromptHeight, int preferredHeight) {
-        if (saved > 0) return saved;
+                                   int legacyPromptHeight, int preferredHeight,
+                                   int minimumHeight) {
+        int minPromptHeight = CARD_PROMPT.equals(card) ? Math.max(0, minimumHeight) : 0;
+        if (saved > 0) return Math.max(saved, minPromptHeight);
         if (CARD_DIFF.equals(card)) return total * 2 / 3;
-        if (CARD_PROMPT.equals(card) && legacyPromptHeight > 0) return legacyPromptHeight;
-        return preferredHeight;
+        if (CARD_PROMPT.equals(card) && legacyPromptHeight > 0) {
+            return Math.max(legacyPromptHeight, minPromptHeight);
+        }
+        return Math.max(preferredHeight, minPromptHeight);
     }
 
     String getSavedCardKeyFor(String card) {
