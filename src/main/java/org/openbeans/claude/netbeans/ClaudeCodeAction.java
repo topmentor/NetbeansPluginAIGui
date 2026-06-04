@@ -10,6 +10,7 @@ import org.openide.util.Lookup;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.JLabel;
 
 /**
  * Action to show SOX_AI_TOOL integration status and provide manual controls.
@@ -39,7 +40,7 @@ public final class ClaudeCodeAction implements ActionListener {
                 
                 // Show status dialog
                 NotifyDescriptor.Message msg = new NotifyDescriptor.Message(
-                    status,
+                    new JLabel("<html>" + status + "</html>"),
                     NotifyDescriptor.INFORMATION_MESSAGE
                 );
                 msg.setTitle("SOX_AI_TOOL Integration Status");
