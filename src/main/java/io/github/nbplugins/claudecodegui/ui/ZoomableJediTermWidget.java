@@ -1,13 +1,18 @@
 package io.github.nbplugins.claudecodegui.ui;
 
 import com.jediterm.terminal.model.StyleState;
+import com.jediterm.terminal.model.SelectionUtil;
 import com.jediterm.terminal.model.TerminalTextBuffer;
+import com.jediterm.terminal.model.TerminalSelection;
+import com.jediterm.terminal.DefaultTerminalCopyPasteHandler;
 import com.jediterm.terminal.ui.JediTermWidget;
 import com.jediterm.terminal.ui.TerminalActionProvider;
 import com.jediterm.terminal.ui.TerminalPanel;
 import com.jediterm.terminal.ui.settings.SettingsProvider;
 import io.github.nbplugins.claudecodegui.ui.common.Zoomable;
 import io.github.nbplugins.claudecodegui.ui.common.ZoomSupport;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import javax.swing.JPopupMenu;
 
 /**
@@ -82,6 +87,41 @@ public class ZoomableJediTermWidget extends JediTermWidget {
             JPopupMenu menu = super.createPopupMenu(provider);
             ZoomSupport.appendZoomMenu(menu, zoomable);
             return menu;
+        }
+
+        @Override
+        public void processKeyEvent(KeyEvent e) {
+            if (copySelectionOnCtrlC(e)) {
+                e.consume();
+                return;
+            }
+            super.processKeyEvent(e);
+        }
+
+        private boolean copySelectionOnCtrlC(KeyEvent e) {
+            if (e == null || e.getID() != KeyEvent.KEY_PRESSED
+                    || e.getKeyCode() != KeyEvent.VK_C) {
+                return false;
+            }
+            // Applies to both Claude and Codex terminals. Ctrl+Shift+C stays
+            // reserved for JediTerm's native copy action shown in the popup menu.
+            int modifiers = e.getModifiersEx();
+            if ((modifiers & InputEvent.CTRL_DOWN_MASK) == 0
+                    || (modifiers & (InputEvent.SHIFT_DOWN_MASK
+                    | InputEvent.ALT_DOWN_MASK
+                    | InputEvent.META_DOWN_MASK)) != 0) {
+                return false;
+            }
+            TerminalSelection selection = getSelection();
+            if (selection == null) {
+                return false;
+            }
+            String text = SelectionUtil.getSelectionText(selection, getTerminalTextBuffer());
+            if (text == null || text.isEmpty()) {
+                return false;
+            }
+            new DefaultTerminalCopyPasteHandler().setContents(text, false);
+            return true;
         }
 
         void refreshFont() {

@@ -59,6 +59,8 @@ public final class ClaudePromptPanel extends JPanel {
     private static final String ICON_FAVORITES = "\u2605";
     /** Unicode history icon (☰). */
     private static final String ICON_HISTORY   = "\u2630";
+    /** Unicode paperclip icon (📎). */
+    private static final String ICON_ATTACH    = "\ud83d\udcce";
     /** The prompt input text area with @-path highlighting and shared input features. */
     private final DecoratedTextArea inputArea;
     /** Button that sends the current prompt. */
@@ -153,16 +155,22 @@ public final class ClaudePromptPanel extends JPanel {
 
         JButton historyButton   = new JButton("<html>" + ICON_HISTORY + " History</html>");
         JButton favoritesButton = new JButton("<html><font color='" + UiUtils.toHex(UiUtils.getWarningColor()) + "'>" + ICON_FAVORITES + "</font> Favorites</html>");
+        JButton attachButton    = new JButton("<html>" + ICON_ATTACH + " Attach</html>");
         historyButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         favoritesButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        attachButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         historyButton.setToolTipText("Browse prompt history");
         favoritesButton.setToolTipText("Browse favorites");
+        attachButton.setToolTipText("Attach files as @path references");
 
         historyButton.addActionListener(e -> showHistoryDialog(historyButton));
         favoritesButton.addActionListener(e -> showFavoritesDialog(favoritesButton));
+        attachButton.addActionListener(e -> showFileChooser(attachButton));
 
         JPanel leftCol = new JPanel();
         leftCol.setLayout(new BoxLayout(leftCol, BoxLayout.Y_AXIS));
+        leftCol.add(attachButton);
+        leftCol.add(Box.createRigidArea(new Dimension(0, 4)));
         leftCol.add(favoritesButton);
         leftCol.add(Box.createRigidArea(new Dimension(0, 4)));
         leftCol.add(historyButton);
@@ -170,7 +178,7 @@ public final class ClaudePromptPanel extends JPanel {
 
         // Equalize all button widths and heights.
         // Done after the component is shown so HTML-rendered labels are measured correctly.
-        JButton[] allButtons = {sendButton, cancelButton, historyButton, favoritesButton};
+        JButton[] allButtons = {sendButton, cancelButton, attachButton, historyButton, favoritesButton};
         addAncestorListener(new javax.swing.event.AncestorListener() {
             @Override public void ancestorAdded(javax.swing.event.AncestorEvent e) {
                 equalizeButtons(allButtons);
@@ -395,12 +403,19 @@ public final class ClaudePromptPanel extends JPanel {
     private void showFileChooser(JButton anchor) {
         JFileChooser chooser = new JFileChooser();
         chooser.setMultiSelectionEnabled(true);
+        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setDialogTitle("Attach files to prompt");
+        String wdStr = workingDirSupplier != null ? workingDirSupplier.get() : null;
+        if (wdStr != null && !wdStr.isBlank()) {
+            File wd = Path.of(wdStr).toFile();
+            if (wd.isDirectory()) {
+                chooser.setCurrentDirectory(wd);
+            }
+        }
         Window owner = SwingUtilities.getWindowAncestor(anchor);
         int result = chooser.showOpenDialog(owner);
         if (result == JFileChooser.APPROVE_OPTION) {
             for (File f : chooser.getSelectedFiles()) {
-                String wdStr = workingDirSupplier != null ? workingDirSupplier.get() : null;
                 Path workDir = wdStr != null ? Path.of(wdStr).normalize() : null;
                 Path filePath = f.toPath().toAbsolutePath().normalize();
                 String token;

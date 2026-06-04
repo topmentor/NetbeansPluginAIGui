@@ -13,6 +13,7 @@ SOX_AI_TOOL은 Apache NetBeans 안에서 AI 에이전트 CLI를 사용할 수 �
 - Codex 전용 실행 모드 제공: Plan Mode, Ask on Command, Auto Mode, Full Auto, Bypass
 - MCP SSE 서버를 통해 NetBeans 컨텍스트를 에이전트에 제공
 - 에이전트가 열린 편집기, 진단 정보, 프로젝트, 파일 정보를 조회할 수 있는 MCP 도구 제공
+- 채팅 입력창에서 파일을 선택해 `@path` 참조로 첨부
 - NetBeans 내부에서 파일 diff를 열고 변경 사항 승인, 거절, 취소
 - 마크다운 및 계획 파일을 렌더링된 형태로 미리보기 (찾기 바, 확대/축소 지원)
 - OpenAI 호환 프록시: Anthropic Messages API 요청을 OpenAI Chat Completions 형식으로 변환해, OpenAI 호환 엔드포인트를 백엔드로 사용 (스트리밍/비스트리밍 모두 지원)
