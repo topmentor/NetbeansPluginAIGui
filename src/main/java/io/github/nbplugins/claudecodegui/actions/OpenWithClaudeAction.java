@@ -19,7 +19,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.actions.Presenter;
 
 /**
@@ -39,7 +38,6 @@ import org.openide.util.actions.Presenter;
 @ActionReferences({
     @ActionReference(path = "Projects/Actions", position = 100)
 })
-@Messages("CTL_OpenWithClaudeAction=Open with SOX_AI_TOOL")
 public final class OpenWithClaudeAction extends AbstractAction
         implements ContextAwareAction {
 

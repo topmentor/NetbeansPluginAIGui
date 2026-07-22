@@ -293,26 +293,35 @@ public final class ClaudePromptPanel extends JPanel {
                     return;
                 }
 
-                String sendKey = ClaudeCodePreferences.getSendKey();
-                boolean ctrl  = e.isControlDown();
-                boolean shift = e.isShiftDown();
-                boolean alt   = e.isAltDown();
-                boolean plain = !ctrl && !shift && !alt;
                 if (e.getKeyCode() != KeyEvent.VK_ENTER) return;
 
-                boolean match = switch (sendKey) {
-                    case ClaudeCodePreferences.ENTER       -> plain;
-                    case ClaudeCodePreferences.CTRL_ENTER  -> ctrl && !shift && !alt;
-                    case ClaudeCodePreferences.SHIFT_ENTER -> shift && !ctrl && !alt;
-                    case ClaudeCodePreferences.ALT_ENTER   -> alt && !ctrl && !shift;
-                    default -> false;
-                };
-                if (match) {
+                String sendKey = ClaudeCodePreferences.getSendKey();
+                String newlineKey = ClaudeCodePreferences.getNewlineKey();
+                if (matchesEnterCombo(e, sendKey)) {
                     e.consume();
                     doSend();
+                    return;
+                }
+                if (matchesEnterCombo(e, newlineKey)) {
+                    e.consume();
+                    area.replaceSelection("\n");
                 }
             }
         });
+    }
+
+    private static boolean matchesEnterCombo(KeyEvent e, String combo) {
+        boolean ctrl  = e.isControlDown();
+        boolean shift = e.isShiftDown();
+        boolean alt   = e.isAltDown();
+        boolean plain = !ctrl && !shift && !alt;
+        return switch (combo) {
+            case ClaudeCodePreferences.ENTER       -> plain;
+            case ClaudeCodePreferences.CTRL_ENTER  -> ctrl && !shift && !alt;
+            case ClaudeCodePreferences.SHIFT_ENTER -> shift && !ctrl && !alt;
+            case ClaudeCodePreferences.ALT_ENTER   -> alt && !ctrl && !shift;
+            default -> false;
+        };
     }
 
     private void doSend() {

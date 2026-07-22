@@ -4,6 +4,8 @@ SOX_AI_TOOL은 Apache NetBeans 안에서 AI 에이전트 CLI를 사용할 수 �
 
 플러그인의 패키지 표시 이름은 **AI Agent Bridge for NetBeans**이며, 제작사/개발자 표기는 **S.O.X**입니다.
 
+설치부터 실제 사용법까지의 상세 안내는 [사용자 매뉴얼](docs/user-manual-ko.md)을 참고하세요.
+
 ## 주요 기능
 
 - NetBeans 도구 창 안의 내장 터미널(JediTerm + PTY)에서 Claude Code 또는 Codex 실행

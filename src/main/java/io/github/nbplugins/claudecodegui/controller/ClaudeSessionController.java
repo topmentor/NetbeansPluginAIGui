@@ -110,6 +110,8 @@ public class ClaudeSessionController {
 
     /** {@code true} while a shift-tab thread is actively switching the CC edit mode. */
     private volatile boolean modeSwitchInProgress = false;
+    /** Ensures YOLO startup mode is applied once per Claude session. */
+    private boolean yoloStartupModeApplied = false;
 
     /**
      * Set to {@code true} when model discovery starts to prevent re-entry;
@@ -223,6 +225,7 @@ public class ClaudeSessionController {
 
         processStartedAt = System.currentTimeMillis();
         firstOutputReceived = false;
+        yoloStartupModeApplied = false;
 
         connector = new PtyTtyConnector(process);
         connector.setSessionTag(tag);
@@ -1041,6 +1044,17 @@ public class ClaudeSessionController {
                 && screenContentDetector.detectChoiceMenu(lines).isEmpty()) {
             discoverModels();
             detectAndApplyInitialEditMode(lines);
+        }
+
+        if (activeBackend == AgentBackend.CLAUDE
+                && ClaudeCodePreferences.isYoloMode()
+                && model.getLifecycle() == SessionLifecycle.READY
+                && !yoloStartupModeApplied
+                && !modeSwitchInProgress
+                && model.getActiveChoiceMenu() == null
+                && screenContentDetector.detectChoiceMenu(lines).isEmpty()) {
+            yoloStartupModeApplied = true;
+            onEditModeComboChanged(EditMode.AUTO);
         }
 
         // Detect choice menu on every poll as backup for when promptFlushTimer misses it

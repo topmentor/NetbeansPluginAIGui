@@ -29,6 +29,10 @@ public final class ClaudeCodePreferences {
     public static final String KEY_CODEX_RUN_MODE = "codexRunMode";
     /** Default Codex mode: ask before command execution in workspace-write sandbox. */
     public static final CodexRunMode DEFAULT_CODEX_RUN_MODE = CodexRunMode.ASK_ON_COMMAND;
+    /** Preference key: start new agent sessions in auto-accept / YOLO mode. */
+    public static final String KEY_YOLO_MODE = "yoloMode";
+    /** Default: explicit approvals remain enabled. */
+    public static final boolean DEFAULT_YOLO_MODE = false;
 
     /** Preference key: key combination that sends the prompt. */
     public static final String KEY_SEND_KEY = "sendKey";
@@ -109,6 +113,16 @@ public final class ClaudeCodePreferences {
         NbPreferences.forModule(ClaudeCodePreferences.class)
                 .put(KEY_CODEX_RUN_MODE,
                         mode != null ? mode.name() : DEFAULT_CODEX_RUN_MODE.name());
+    }
+
+    public static boolean isYoloMode() {
+        return NbPreferences.forModule(ClaudeCodePreferences.class)
+                .getBoolean(KEY_YOLO_MODE, DEFAULT_YOLO_MODE);
+    }
+
+    public static void setYoloMode(boolean enabled) {
+        NbPreferences.forModule(ClaudeCodePreferences.class)
+                .putBoolean(KEY_YOLO_MODE, enabled);
     }
 
     /**

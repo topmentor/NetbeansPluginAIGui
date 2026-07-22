@@ -6,7 +6,7 @@
 
     <groupId>io.github.nbplugins</groupId>
     <artifactId>sox-ai-tool</artifactId>
-    <version>1.0</version>
+    <version>1.3.0</version>
     <packaging>nbm</packaging>
     <name>AI Agent Bridge for NetBeans</name>
     <description>NetBeans plugin that integrates Claude Code and Codex agent CLIs with an embedded terminal, MCP tools, markdown previews, and file-diff review inside the IDE.</description>

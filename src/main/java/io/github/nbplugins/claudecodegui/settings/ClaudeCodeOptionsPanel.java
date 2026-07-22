@@ -67,6 +67,8 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
     private JTextField executablePathField;
     /** Backend selector for Claude Code vs Codex. */
     private JComboBox<AgentBackend> agentBackendCombo;
+    /** Checkbox to make new agent sessions run without approval prompts. */
+    private javax.swing.JCheckBox yoloModeCheckBox;
     /** Field for the codex executable path. */
     private JTextField codexExecutablePathField;
     /** Spinner for the MCP server port. */
@@ -323,6 +325,19 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
         form.add(agentBackendCombo, gbc(1, row, false));
         row++;
 
+        // --- YOLO / auto-accept mode ---
+        yoloModeCheckBox = new javax.swing.JCheckBox(
+                "YOLO mode (auto accept for new agent sessions)");
+        yoloModeCheckBox.setToolTipText(
+                "Claude Code starts in Auto edit mode; Codex starts in Auto Mode (--sandbox workspace-write --ask-for-approval never)");
+        GridBagConstraints yoloGbc = new GridBagConstraints();
+        yoloGbc.gridx = 0; yoloGbc.gridy = row;
+        yoloGbc.gridwidth = 3;
+        yoloGbc.anchor = GridBagConstraints.WEST;
+        yoloGbc.insets = new Insets(4, 8, 8, 8);
+        form.add(yoloModeCheckBox, yoloGbc);
+        row++;
+
         // --- executable path ---
         form.add(new JLabel("Claude CLI path:"), gbc(0, row, false));
         executablePathField = new JTextField(30);
@@ -496,6 +511,7 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
         executablePathField.setText(
                 ClaudeCodePreferences.getClaudeExecutablePath());
         agentBackendCombo.setSelectedItem(ClaudeCodePreferences.getAgentBackend());
+        yoloModeCheckBox.setSelected(ClaudeCodePreferences.isYoloMode());
         codexExecutablePathField.setText(
                 ClaudeCodePreferences.getCodexExecutablePath());
         mcpPortSpinner.setValue(ClaudeCodePreferences.getMcpPort());
@@ -546,6 +562,13 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
         ClaudeCodePreferences.setClaudeExecutablePath(
                 executablePathField.getText().trim());
         ClaudeCodePreferences.setAgentBackend((AgentBackend) agentBackendCombo.getSelectedItem());
+        boolean yolo = yoloModeCheckBox.isSelected();
+        ClaudeCodePreferences.setYoloMode(yolo);
+        if (yolo) {
+            ClaudeCodePreferences.setCodexRunMode(CodexRunMode.AUTO);
+        } else if (ClaudeCodePreferences.getCodexRunMode() == CodexRunMode.AUTO) {
+            ClaudeCodePreferences.setCodexRunMode(CodexRunMode.ASK_ON_COMMAND);
+        }
         ClaudeCodePreferences.setCodexExecutablePath(
                 codexExecutablePathField.getText().trim());
         ClaudeCodePreferences.setMcpPort((Integer) mcpPortSpinner.getValue());
