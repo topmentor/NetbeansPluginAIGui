@@ -15,7 +15,7 @@ description: 로컬 Playwright 실행환경(NetBeans 번들 드라이버 또는 
 
 ## 1. 실행환경 준비 (감지 + 자동 설치)
 
-PowerShell에서 실행한다.
+명시적으로 준비하려면 PowerShell에서 실행한다.
 
 ```powershell
 $cfg = & powershell -ExecutionPolicy Bypass -File tools\playwright\ensure-playwright.ps1 | ConvertFrom-Json
@@ -31,14 +31,20 @@ $cfg = & powershell -ExecutionPolicy Bypass -File tools\playwright\ensure-playwr
 
 > 자동 설치는 실행환경이 **실제로 없을 때만** 일어난다. 이미 존재하는 번들 버전을 사용자 요청 없이 다른 버전으로 다운로드·교체하지 않는다.
 
+`helper.mjs`의 `launchBrowser()`는 `PW_PACKAGE`/`PW_BROWSER_EXE`가 없고 캐시된 설정도 없으면 `ensure-playwright.ps1`을 자동 실행한다. 따라서 작업별 자동화 스크립트는 보통 `launchBrowser()`만 호출하면 된다.
+
 ## 2. 실행 검사
 
 본격 작업 전 반드시 한 번 실행 검사를 수행한다.
 
 ```powershell
+# 명시 설정 방식
 $env:PW_PACKAGE     = $cfg.playwrightPackage
 $env:PW_BROWSER_EXE = $cfg.browserExecutable
 & $cfg.node tools\playwright\playwright-healthcheck.mjs http://localhost:8080      # 자동 검증 시 --headless 추가
+
+# 간단 방식: helper.mjs가 필요 시 자동 준비
+node tools\playwright\playwright-healthcheck.mjs http://localhost:8080 --headless
 ```
 
 결과 JSON(`ok`, `httpStatus`, `title`, `browserVersion`, `screenshot`, `consoleMessages`, `pageErrors`)을 확인한다. 스크린샷은 `tools/playwright/.artifacts/`에 저장된다.

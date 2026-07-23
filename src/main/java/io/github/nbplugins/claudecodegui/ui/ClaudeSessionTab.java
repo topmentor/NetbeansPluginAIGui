@@ -406,6 +406,29 @@ public class ClaudeSessionTab extends TopComponent
         });
     }
 
+    /**
+     * Closes active SOX_AI_TOOL tabs whose working directory belongs to a
+     * project that was closed in NetBeans.
+     *
+     * @param projectDir closed project directory
+     */
+    public static void closeSessionsForProject(File projectDir) {
+        if (projectDir == null) return;
+        SwingUtilities.invokeLater(() -> {
+            Path projectPath = projectDir.toPath().toAbsolutePath().normalize();
+            for (TopComponent tc : WindowManager.getDefault().getRegistry().getOpened()) {
+                if (tc instanceof ClaudeSessionTab tab) {
+                    File workingDir = tab.getWorkingDirectory();
+                    if (workingDir != null
+                            && workingDir.toPath().toAbsolutePath().normalize().startsWith(projectPath)) {
+                        LOG.fine("Closing SOX_AI_TOOL session because project closed: " + projectPath);
+                        tab.close();
+                    }
+                }
+            }
+        });
+    }
+
     // -------------------------------------------------------------------------
     // TopComponent lifecycle
     // -------------------------------------------------------------------------

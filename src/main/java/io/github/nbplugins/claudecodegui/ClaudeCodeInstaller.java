@@ -5,16 +5,22 @@ package io.github.nbplugins.claudecodegui;
 import io.github.nbplugins.claudecodegui.mcp.MCPSseServer;
 import io.github.nbplugins.claudecodegui.mcp.NetBeansMCPHandler;
 import io.github.nbplugins.claudecodegui.settings.ClaudeCodePreferences;
+import io.github.nbplugins.claudecodegui.ui.ClaudeSessionTab;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.openide.util.NbPreferences;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -118,7 +124,29 @@ public class ClaudeCodeInstaller extends ModuleInstall implements PropertyChange
      */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-         // No-op: lock file no longer used
+        if (!OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+            return;
+        }
+        Set<Path> openProjectDirs = projectDirs(evt.getNewValue());
+        for (Path previouslyOpen : projectDirs(evt.getOldValue())) {
+            if (!openProjectDirs.contains(previouslyOpen)) {
+                ClaudeSessionTab.closeSessionsForProject(previouslyOpen.toFile());
+            }
+        }
+    }
+
+    private static Set<Path> projectDirs(Object value) {
+        Set<Path> dirs = new HashSet<>();
+        if (!(value instanceof Project[] projects)) {
+            return dirs;
+        }
+        for (Project project : projects) {
+            File dir = FileUtil.toFile(project.getProjectDirectory());
+            if (dir != null) {
+                dirs.add(dir.toPath().toAbsolutePath().normalize());
+            }
+        }
+        return dirs;
     }
 
     /**

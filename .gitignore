@@ -11,5 +11,5 @@ CLAUDE.md
 AGENTS.md
 tools/playwright/.pw-runtime/
 tools/playwright/.artifacts/
-
+tools/playwright/.pw-config.json
 
