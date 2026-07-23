@@ -33,11 +33,19 @@ public final class ClaudeCodePreferences {
     public static final String KEY_YOLO_MODE = "yoloMode";
     /** Default: explicit approvals remain enabled. */
     public static final boolean DEFAULT_YOLO_MODE = false;
+    /** Preference key: force the Playwright helper to use the local npm runtime. */
+    public static final String KEY_PLAYWRIGHT_FORCE_NPM = "playwrightForceNpm";
+    /** Default: prefer the NetBeans-bundled Playwright runtime when available. */
+    public static final boolean DEFAULT_PLAYWRIGHT_FORCE_NPM = false;
 
     /** Preference key: key combination that sends the prompt. */
     public static final String KEY_SEND_KEY = "sendKey";
     /** Preference key: key combination that inserts a newline. */
     public static final String KEY_NEWLINE_KEY = "newlineKey";
+    /** Preference key: prompt automatically sent when a new agent session is ready. */
+    public static final String KEY_INITIAL_PROMPT = "initialPrompt";
+    /** Default: no automatic initial prompt. */
+    public static final String DEFAULT_INITIAL_PROMPT = "";
 
     /** Allowed key-combo values. */
     /** Enter key. */ public static final String ENTER        = "ENTER";
@@ -135,6 +143,16 @@ public final class ClaudeCodePreferences {
     public static void setYoloMode(boolean enabled) {
         NbPreferences.forModule(ClaudeCodePreferences.class)
                 .putBoolean(KEY_YOLO_MODE, enabled);
+    }
+
+    public static boolean isPlaywrightForceNpm() {
+        return NbPreferences.forModule(ClaudeCodePreferences.class)
+                .getBoolean(KEY_PLAYWRIGHT_FORCE_NPM, DEFAULT_PLAYWRIGHT_FORCE_NPM);
+    }
+
+    public static void setPlaywrightForceNpm(boolean enabled) {
+        NbPreferences.forModule(ClaudeCodePreferences.class)
+                .putBoolean(KEY_PLAYWRIGHT_FORCE_NPM, enabled);
     }
 
     /**
@@ -263,6 +281,16 @@ public final class ClaudeCodePreferences {
             prefs.put(KEY_SEND_KEY, DEFAULT_SEND_KEY);
             prefs.put(KEY_NEWLINE_KEY, DEFAULT_NEWLINE_KEY);
         }
+    }
+
+    public static String getInitialPrompt() {
+        return NbPreferences.forModule(ClaudeCodePreferences.class)
+                .get(KEY_INITIAL_PROMPT, DEFAULT_INITIAL_PROMPT);
+    }
+
+    public static void setInitialPrompt(String text) {
+        NbPreferences.forModule(ClaudeCodePreferences.class)
+                .put(KEY_INITIAL_PROMPT, text != null ? text : DEFAULT_INITIAL_PROMPT);
     }
 
     // -------------------------------------------------------------------------

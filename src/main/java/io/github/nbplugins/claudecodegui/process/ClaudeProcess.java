@@ -163,6 +163,11 @@ public final class ClaudeProcess {
                 : ClaudeCodePreferences.resolveClaudeExecutable();
 
         Map<String, String> env = buildEnv(profile, ClaudeCodePreferences.getProfilesDir());
+        if (ClaudeCodePreferences.isPlaywrightForceNpm()) {
+            env.put("SOX_PLAYWRIGHT_FORCE_NPM", "1");
+        } else {
+            env.remove("SOX_PLAYWRIGHT_FORCE_NPM");
+        }
 
         // OpenAI proxy: register session and inject ANTHROPIC_BASE_URL pointing to internal proxy
         if (profile != null

@@ -31,6 +31,8 @@ $cfg = & powershell -ExecutionPolicy Bypass -File tools\playwright\ensure-playwr
 
 > 자동 설치는 실행환경이 **실제로 없을 때만** 일어난다. 이미 존재하는 번들 버전을 사용자 요청 없이 다른 버전으로 다운로드·교체하지 않는다.
 
+SOX_AI_TOOL 설정창의 `Playwright > Use local npm runtime instead of NetBeans bundle`을 켜면 새 Claude Code/Codex 세션에 `SOX_PLAYWRIGHT_FORCE_NPM=1`이 전달된다. 이 값이 있으면 `helper.mjs`와 `ensure-playwright.ps1`은 번들을 건너뛰고 npm 런타임을 사용한다.
+
 `helper.mjs`의 `launchBrowser()`는 `PW_PACKAGE`/`PW_BROWSER_EXE`가 없고 캐시된 설정도 없으면 `ensure-playwright.ps1`을 자동 실행한다. 따라서 작업별 자동화 스크립트는 보통 `launchBrowser()`만 호출하면 된다.
 
 ## 2. 실행 검사

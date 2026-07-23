@@ -22,7 +22,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
+import javax.swing.JTextArea;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
@@ -34,7 +36,9 @@ import javax.swing.table.AbstractTableModel;
  *
  * <p>Contains three tabs:
  * <ul>
- *   <li><b>General</b> — Claude CLI path, MCP port, send/newline key bindings, debug mode</li>
+ *   <li><b>General</b> — prompt keys, diff display, terminal font, and dock settings</li>
+ *   <li><b>Advanced</b> — CLI paths, MCP, history, and diagnostics</li>
+ *   <li><b>Playwright</b> — Playwright runtime detection and health checks</li>
  *   <li><b>Profiles</b> — named connection profiles with auth, proxy, and extra env vars
  *       (see {@link ClaudeProfilesPanel})</li>
  *   <li><b>Favorites</b> — manage global favorites (text, shortcut, ordering)</li>
@@ -115,6 +119,8 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
     private JSpinner hangTimeoutSpinner;
     /** Checkbox to enable MCP integration (pass --mcp-config flag). */
     private javax.swing.JCheckBox mcpEnabledCheckBox;
+    /** Initial prompt automatically sent when a new session first becomes ready. */
+    private JTextArea initialPromptArea;
 
     /** send-key radio buttons: value → button */
     private final Map<String, JRadioButton> sendRadios = new LinkedHashMap<>();
@@ -132,6 +138,9 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
     /** Favorites tab panel. */
     private final GlobalFavoritesPanel favoritesPanel = new GlobalFavoritesPanel();
 
+    /** Playwright tab panel. */
+    private final PlaywrightSettingsPanel playwrightPanel = new PlaywrightSettingsPanel();
+
     /**
      * Creates the panel and initialises all UI components.
      */
@@ -145,6 +154,7 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
         JTabbedPane tabs = new JTabbedPane();
         tabs.addTab("General", buildGeneralPanel());
         tabs.addTab("Advanced", buildAdvancedPanel());
+        tabs.addTab("Playwright", playwrightPanel);
         tabs.addTab("Favorites", favoritesPanel);
         tabs.addTab("Profiles", profilesPanel);
         add(tabs, BorderLayout.CENTER);
@@ -209,6 +219,19 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
             sendRadios.get(val).addActionListener(e -> syncExclusion(val, true));
             newlineRadios.get(val).addActionListener(e -> syncExclusion(val, false));
         }
+
+        // --- initial prompt ---
+        form.add(new JLabel("Initial prompt:"), gbc(0, row, false));
+        initialPromptArea = new JTextArea(5, 48);
+        initialPromptArea.setLineWrap(true);
+        initialPromptArea.setWrapStyleWord(true);
+        initialPromptArea.setToolTipText("Automatically sent once when a new agent session becomes ready; leave empty to disable");
+        GridBagConstraints ipGbc = gbcFill(1, row);
+        ipGbc.gridwidth = 2;
+        ipGbc.fill = GridBagConstraints.BOTH;
+        ipGbc.weighty = 0.2;
+        form.add(new JScrollPane(initialPromptArea), ipGbc);
+        row++;
 
         // --- diff in session ---
         diffInSessionCheck = new javax.swing.JCheckBox("Open file diff in a separate tab");
@@ -539,6 +562,8 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
         choiceMenuFocusCombo.setSelectedIndex(focusIdx >= 0 ? focusIdx : 0);
         hangTimeoutSpinner.setValue(ClaudeCodePreferences.getHangTimeoutSeconds());
         mcpEnabledCheckBox.setSelected(ClaudeCodePreferences.isMcpEnabled());
+        playwrightPanel.load();
+        initialPromptArea.setText(ClaudeCodePreferences.getInitialPrompt());
 
         String sendVal    = ClaudeCodePreferences.getSendKey();
         String newlineVal = ClaudeCodePreferences.getNewlineKey();
@@ -596,6 +621,8 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
                         : ClaudeCodePreferences.DEFAULT_CHOICE_MENU_FOCUS_MODE);
         ClaudeCodePreferences.setHangTimeoutSeconds((Integer) hangTimeoutSpinner.getValue());
         ClaudeCodePreferences.setMcpEnabled(mcpEnabledCheckBox.isSelected());
+        playwrightPanel.store();
+        ClaudeCodePreferences.setInitialPrompt(initialPromptArea.getText());
         ClaudeCodePreferences.setSendKey(selectedValue(sendRadios, ClaudeCodePreferences.DEFAULT_SEND_KEY));
         ClaudeCodePreferences.setNewlineKey(selectedValue(newlineRadios, ClaudeCodePreferences.DEFAULT_NEWLINE_KEY));
         ClaudeCodePreferences.setTerminalFontName(pendingFontName);

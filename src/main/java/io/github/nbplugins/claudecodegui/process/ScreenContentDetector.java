@@ -548,6 +548,19 @@ public final class ScreenContentDetector {
      * @return the detected {@link DetectedSessionState}
      */
     public DetectedSessionState detectSessionState(List<String> lines) {
+        return detectSessionState(lines, true);
+    }
+
+    /**
+     * Detect the CLI session state using TTY layout heuristics.
+     *
+     * @param lines rendered screen lines from {@code TerminalTextBuffer}
+     * @param requireFramedPrompt {@code true} for Claude Code's framed input area;
+     *                            {@code false} for Codex, whose prompt is not always
+     *                            surrounded by separator lines
+     * @return the detected {@link DetectedSessionState}
+     */
+    public DetectedSessionState detectSessionState(List<String> lines, boolean requireFramedPrompt) {
         if (lines == null || lines.isEmpty()) return DetectedSessionState.UNKNOWN;
 
         // Search all lines (bottom-up) for an input prompt adjacent to a separator line.
@@ -571,7 +584,7 @@ public final class ScreenContentDetector {
                         break;
                     }
                 }
-                if (separatorAbove && separatorBelow) {
+                if (!requireFramedPrompt || (separatorAbove && separatorBelow)) {
                     inputPromptAreaFound = true;
                     promptRow = i;
                     break;

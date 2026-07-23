@@ -20,6 +20,7 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const configFile = join(scriptDir, '.pw-config.json');
 
 function readCachedConfig() {
+  if (forceNpm()) return null;
   if (!existsSync(configFile)) return null;
   try {
     const cfg = JSON.parse(readFileSync(configFile, 'utf8'));
@@ -30,13 +31,19 @@ function readCachedConfig() {
   return null;
 }
 
+function forceNpm() {
+  return /^(1|true|yes)$/i.test(process.env.SOX_PLAYWRIGHT_FORCE_NPM || '');
+}
+
 function runEnsurePlaywright() {
   const script = join(scriptDir, 'ensure-playwright.ps1');
-  const result = spawnSync('powershell', [
+  const args = [
     '-ExecutionPolicy', 'Bypass',
     '-File', script,
     '-Quiet',
-  ], {
+  ];
+  if (forceNpm()) args.push('-ForceNpm');
+  const result = spawnSync('powershell', args, {
     cwd: dirname(scriptDir),
     encoding: 'utf8',
     windowsHide: true,

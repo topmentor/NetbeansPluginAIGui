@@ -6,7 +6,7 @@
 
     <groupId>io.github.nbplugins</groupId>
     <artifactId>sox-ai-tool</artifactId>
-    <version>1.3.1</version>
+    <version>1.3.2</version>
     <packaging>nbm</packaging>
     <name>AI Agent Bridge for NetBeans</name>
     <description>NetBeans plugin that integrates Claude Code and Codex agent CLIs with an embedded terminal, MCP tools, markdown previews, and file-diff review inside the IDE.</description>
@@ -45,6 +45,15 @@
                 <excludes>
                     <exclude>**/*.svg</exclude>
                 </excludes>
+            </resource>
+            <resource>
+                <directory>tools/playwright</directory>
+                <targetPath>tools/playwright</targetPath>
+                <includes>
+                    <include>ensure-playwright.ps1</include>
+                    <include>helper.mjs</include>
+                    <include>playwright-healthcheck.mjs</include>
+                </includes>
             </resource>
         </resources>
         <plugins>

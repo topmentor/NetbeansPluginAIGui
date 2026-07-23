@@ -2,6 +2,7 @@ package io.github.nbplugins.claudecodegui.ui;
 
 import com.jediterm.terminal.TerminalColor;
 import com.jediterm.terminal.TextStyle;
+import com.jediterm.terminal.emulator.ColorPalette;
 import com.jediterm.terminal.emulator.ColorPaletteImpl;
 import com.jediterm.terminal.ui.settings.DefaultSettingsProvider;
 import io.github.nbplugins.claudecodegui.settings.ClaudeCodePreferences;
@@ -22,6 +23,31 @@ import javax.swing.UIManager;
  * with full coverage of those characters, pre-installed on most Linux GNOME desktops.
  */
 final class NetBeansSettingsProvider extends DefaultSettingsProvider {
+
+    private static final int ANSI_YELLOW = 3;
+    private static final int ANSI_BRIGHT_YELLOW = 11;
+
+    private static final ColorPalette CONTRAST_PALETTE = new ColorPalette() {
+        @Override
+        protected com.jediterm.core.Color getForegroundByColorIndex(int colorIndex) {
+            if (isLightTheme()) {
+                if (colorIndex == ANSI_YELLOW) {
+                    return new com.jediterm.core.Color(0x8A, 0x5A, 0x00);
+                }
+                if (colorIndex == ANSI_BRIGHT_YELLOW) {
+                    return new com.jediterm.core.Color(0x9A, 0x67, 0x00);
+                }
+            }
+            return ColorPaletteImpl.XTERM_PALETTE.getForeground(
+                    ColorPalette.getIndexedTerminalColor(colorIndex));
+        }
+
+        @Override
+        protected com.jediterm.core.Color getBackgroundByColorIndex(int colorIndex) {
+            return ColorPaletteImpl.XTERM_PALETTE.getBackground(
+                    ColorPalette.getIndexedTerminalColor(colorIndex));
+        }
+    };
 
     private int zoomDelta = 0;
 
@@ -68,6 +94,13 @@ final class NetBeansSettingsProvider extends DefaultSettingsProvider {
 
     @Override
     public com.jediterm.terminal.emulator.ColorPalette getTerminalColorPalette() {
-        return ColorPaletteImpl.XTERM_PALETTE;
+        return CONTRAST_PALETTE;
+    }
+
+    private static boolean isLightTheme() {
+        Color bg = UIManager.getColor("EditorPane.background");
+        if (bg == null) bg = UIManager.getColor("Panel.background");
+        if (bg == null) return false;
+        return bg.getRed() + bg.getGreen() + bg.getBlue() >= 384;
     }
 }

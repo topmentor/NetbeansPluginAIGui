@@ -37,6 +37,9 @@ $scriptDir  = Split-Path -Parent $MyInvocation.MyCommand.Path
 $runtimeDir = Join-Path $scriptDir '.pw-runtime'
 # Pin to the version verified with this project (NetBeans bundle == Playwright Core 1.57).
 $PlaywrightVersion = '1.57.0'
+if (-not $ForceNpm -and $env:SOX_PLAYWRIGHT_FORCE_NPM -match '^(1|true|yes)$') {
+    $ForceNpm = $true
+}
 
 function Write-Log([string]$msg) {
     if (-not $Quiet) { [Console]::Error.WriteLine("[ensure-playwright] $msg") }
@@ -115,7 +118,7 @@ function Resolve-NpmConfig {
             if (-not (Test-Path -LiteralPath (Join-Path $runtimeDir 'package.json'))) {
                 & npm init -y | Out-Null
             }
-            & npm install "playwright@$PlaywrightVersion" --no-audit --no-fund
+            & npm install "playwright@$PlaywrightVersion" --no-audit --no-fund *> $null
             if ($LASTEXITCODE -ne 0) { throw "npm install playwright failed (exit $LASTEXITCODE)" }
         } finally { Pop-Location }
     } else {
@@ -125,7 +128,7 @@ function Resolve-NpmConfig {
     Write-Log 'Ensuring Chromium browser is downloaded (playwright install chromium) ...'
     Push-Location $runtimeDir
     try {
-        & npx --yes playwright install chromium
+        & npx --yes playwright install chromium *> $null
         if ($LASTEXITCODE -ne 0) { throw "playwright install chromium failed (exit $LASTEXITCODE)" }
         $coreVersion = (Get-Content -Raw (Join-Path $pkgDir 'package.json') | ConvertFrom-Json).version
         $exe = (& $node -e "process.stdout.write(require('playwright').chromium.executablePath())")

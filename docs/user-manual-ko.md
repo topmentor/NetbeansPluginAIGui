@@ -39,7 +39,7 @@ codex --version
 ## 3. 최초 설정
 
 1. `Tools > Options > SOX_AI_TOOL`을 엽니다.
-2. `General` 탭에서 `Agent CLI`를 선택합니다.
+2. `Advanced` 탭에서 `Agent CLI`를 선택합니다.
    - `Claude Code`: Claude Code CLI를 실행합니다.
    - `Codex`: Codex CLI를 실행합니다.
 3. CLI 실행 파일 경로를 설정합니다.
@@ -49,10 +49,11 @@ codex --version
 4. 승인 없이 자동 진행하려면 `YOLO mode (auto accept for new agent sessions)`를 켭니다. Claude Code는 새 세션 시작 후 `Auto` 편집 모드로 전환하고, Codex는 새 세션을 `Auto Mode`로 시작합니다.
 5. `MCP server port`를 확인합니다. 기본값을 그대로 사용해도 됩니다.
 6. `Enable MCP integration`을 켜 둡니다. 이 옵션을 켜면 에이전트가 NetBeans의 열린 편집기, 진단 정보, 파일 열기, diff 열기 같은 IDE 도구를 사용할 수 있습니다.
-7. 채팅창과 내장 터미널에서 한글이 깨지거나 네모로 보이지 않도록 `Terminal font`의 `Choose...`를 눌러 한글을 지원하는 고정폭 글꼴로 변경합니다. Windows에서는 `D2Coding`, `Consolas`, `Malgun Gothic` 등을 사용할 수 있습니다.
-8. `OK` 또는 `Apply`를 눌러 저장합니다.
+7. `Playwright` 탭에서 `Search Playwright Runtime`을 눌러 실행환경을 확인합니다. NetBeans 번들 드라이버 또는 로컬 npm 설치 여부, Node/Playwright/Chromium 위치, 버전이 표시됩니다.
+8. `General` 탭에서 채팅창과 내장 터미널에서 한글이 깨지거나 네모로 보이지 않도록 `Terminal font`의 `Choose...`를 눌러 한글을 지원하는 고정폭 글꼴로 변경합니다. Windows에서는 `D2Coding`, `Consolas`, `Malgun Gothic` 등을 사용할 수 있습니다.
+9. `OK` 또는 `Apply`를 눌러 저장합니다.
 
-MCP 포트가 이미 사용 중이라는 알림이 나오면 `Tools > Options > SOX_AI_TOOL`에서 `MCP server port` 값을 다른 포트로 변경한 뒤 NetBeans를 재시작합니다.
+MCP 포트가 이미 사용 중이라는 알림이 나오면 `Tools > Options > SOX_AI_TOOL > Advanced`에서 `MCP server port` 값을 다른 포트로 변경한 뒤 NetBeans를 재시작합니다.
 
 ## 4. 프로필 설정
 
@@ -195,29 +196,38 @@ SOX_AI_TOOL은 마크다운 파일과 계획 파일을 NetBeans 안에서 렌더
 
 이후 해당 프로젝트에서 `Open with SOX_AI_TOOL`을 실행하면 선택한 프로필이 기본값으로 사용됩니다.
 
-## 13. 프로젝트 스킬 문서
+## 13. 초기 실행 프롬프트
 
-작업 디렉터리에 `docs/SKILL.md` 파일이 있으면 SOX_AI_TOOL이 첫 프롬프트를 보낼 때 해당 내용을 세션 컨텍스트로 함께 전달합니다.
+새 AI 세션이 준비되었을 때 자동으로 보낼 프롬프트를 설정할 수 있습니다.
 
-- 적용 대상: Claude Code와 Codex 세션 모두
-- 적용 시점: 세션에서 첫 사용자 프롬프트를 전송할 때 한 번
-- 파일 위치: `<작업 디렉터리>\docs\SKILL.md`
-- 파일이 없거나 비어 있으면 아무 내용도 추가하지 않습니다.
+- 설정 위치: `Tools > Options > SOX_AI_TOOL > General > Initial prompt`
+- 적용 대상: Claude Code와 Codex의 새 세션
+- 적용 시점: 새 세션이 READY 상태가 된 뒤 한 번
+- `Continue last` 또는 `Resume` 세션에는 자동 전송하지 않습니다.
+- 비워 두면 아무 프롬프트도 자동 전송하지 않습니다.
 
-이 기능은 프로젝트별 도구 사용 규칙, 검증 절차, 로컬 스크립트 사용법 같은 내용을 LLM이 바로 참고하도록 하기 위한 기능입니다. 프롬프트 히스토리에는 사용자가 입력한 원문만 저장됩니다.
+기존처럼 `docs/SKILL.md`를 자동으로 읽어 첫 프롬프트에 덧붙이는 동작은 사용하지 않습니다. 프로젝트 규칙이나 작업 지침을 항상 전달하고 싶으면 `Initial prompt`에 직접 입력합니다.
 
-## 14. 권장 사용 흐름
+## 14. Playwright 설정
+
+웹 UI 점검을 위해 `docs/SKILL.md`의 `playwright-ui` 지침을 사용하는 경우, 에이전트는 기본적으로 NetBeans 번들 Playwright 런타임을 먼저 찾고 없거나 불완전하면 `tools/playwright/.pw-runtime`에 npm 런타임을 자동 설치합니다.
+
+`Tools > Options > SOX_AI_TOOL > Playwright`에서 `Use local npm runtime instead of NetBeans bundle`을 켜면 새 Claude Code/Codex 세션에 `SOX_PLAYWRIGHT_FORCE_NPM=1`이 전달됩니다. 이 경우 `helper.mjs`와 `ensure-playwright.ps1`은 번들을 건너뛰고 로컬 npm 런타임을 사용합니다.
+
+`Search Playwright Runtime`은 Playwright 실행환경을 검색하고 필요한 경우 자동 설치합니다. `Run Playwright + NetBeans Check`는 Headless Chromium을 실제로 실행해 healthcheck를 수행하고, NetBeans MCP 서버 연결 상태를 함께 표시합니다.
+
+## 15. 권장 사용 흐름
 
 처음 사용하는 프로젝트에서는 다음 흐름을 권장합니다.
 
-1. `Tools > Options > SOX_AI_TOOL`에서 사용할 CLI와 경로를 설정합니다.
+1. `Tools > Options > SOX_AI_TOOL > Advanced`에서 사용할 CLI와 경로를 설정합니다.
 2. 프로젝트 우클릭 후 `Open with SOX_AI_TOOL`을 선택합니다.
 3. 첫 실행은 Claude Code의 `Plan` 또는 Codex의 `Plan Mode`로 시작합니다.
 4. 에이전트에게 작업 범위와 변경할 파일을 먼저 설명하게 합니다.
 5. 변경이 필요하면 diff를 확인하고 승인합니다.
 6. 작업이 끝나면 NetBeans에서 빌드 또는 테스트를 실행해 결과를 검증합니다.
 
-## 15. 문제 해결
+## 16. 문제 해결
 
 ### SOX_AI_TOOL 메뉴나 옵션이 보이지 않음
 
@@ -227,13 +237,13 @@ SOX_AI_TOOL은 마크다운 파일과 계획 파일을 NetBeans 안에서 렌더
 
 ### CLI 실행 실패
 
-- `Tools > Options > SOX_AI_TOOL > General`에서 CLI 경로를 확인합니다.
+- `Tools > Options > SOX_AI_TOOL > Advanced`에서 CLI 경로를 확인합니다.
 - 터미널에서 `claude --version` 또는 `codex --version`이 실행되는지 확인합니다.
 - CLI가 `PATH`에 없으면 실행 파일 경로를 직접 지정합니다.
 
 ### MCP 포트가 사용 중이라고 나옴
 
-- `Tools > Options > SOX_AI_TOOL > General`에서 `MCP server port`를 다른 값으로 변경합니다.
+- `Tools > Options > SOX_AI_TOOL > Advanced`에서 `MCP server port`를 다른 값으로 변경합니다.
 - NetBeans를 재시작합니다.
 
 ### 에이전트가 NetBeans 파일이나 진단 정보를 못 읽음
