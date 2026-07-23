@@ -19,6 +19,9 @@ import io.github.nbplugins.claudecodegui.settings.ClaudeCodePreferences;
 import io.github.nbplugins.claudecodegui.settings.ClaudeProfile;
 import io.github.nbplugins.claudecodegui.settings.ClaudeProfileStore;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -112,6 +115,8 @@ public class ClaudeSessionController {
     private volatile boolean modeSwitchInProgress = false;
     /** Ensures YOLO startup mode is applied once per Claude session. */
     private boolean yoloStartupModeApplied = false;
+    /** Ensures project skill context is injected at most once per session. */
+    private boolean projectSkillContextSent = false;
 
     /**
      * Set to {@code true} when model discovery starts to prevent re-entry;
@@ -226,6 +231,7 @@ public class ClaudeSessionController {
         processStartedAt = System.currentTimeMillis();
         firstOutputReceived = false;
         yoloStartupModeApplied = false;
+        projectSkillContextSent = false;
 
         connector = new PtyTtyConnector(process);
         connector.setSessionTag(tag);
@@ -369,10 +375,11 @@ public class ClaudeSessionController {
         if (!text.isBlank()) {
             model.addPromptToHistory(text);
         }
+        String outboundText = withProjectSkillContext(text);
 
         Thread t = new Thread(() -> {
             try {
-                connector.write(text);
+                connector.write(outboundText);
                 Thread.sleep(200);
                 connector.write("\r");
             } catch (IOException ex) {
@@ -383,6 +390,35 @@ public class ClaudeSessionController {
         }, "pty-send-prompt");
         t.setDaemon(true);
         t.start();
+    }
+
+    private String withProjectSkillContext(String text) {
+        if (projectSkillContextSent || workingDir == null) {
+            return text;
+        }
+        projectSkillContextSent = true;
+        Path skillFile = workingDir.toPath().resolve("docs").resolve("SKILL.md");
+        if (!Files.isRegularFile(skillFile)) {
+            return text;
+        }
+        try {
+            String skill = Files.readString(skillFile, StandardCharsets.UTF_8).trim();
+            if (skill.isBlank()) {
+                return text;
+            }
+            return """
+                    Use the following project skill document as additional working context for this session.
+
+                    <project-skill path="docs/SKILL.md">
+                    %s
+                    </project-skill>
+
+                    User request:
+                    %s""".formatted(skill, text);
+        } catch (IOException ex) {
+            LOG.warning("Could not read docs/SKILL.md: " + ex.getMessage());
+            return text;
+        }
     }
 
     /**

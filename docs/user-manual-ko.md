@@ -43,8 +43,9 @@ codex --version
    - `Claude Code`: Claude Code CLI를 실행합니다.
    - `Codex`: Codex CLI를 실행합니다.
 3. CLI 실행 파일 경로를 설정합니다.
-   - CLI가 `PATH`에 있으면 비워 두어도 됩니다.
-   - 직접 지정하려면 `Claude CLI path` 또는 `Codex CLI path`에서 `Browse...`를 눌러 실행 파일을 선택합니다.
+   - Windows 기본값은 `C:\Users\<사용자>\AppData\Roaming\npm\claude.cmd`와 `C:\Users\<사용자>\AppData\Roaming\npm\codex.cmd`입니다.
+   - CLI가 다른 위치에 있으면 `Claude CLI path` 또는 `Codex CLI path`에서 `Browse...`를 눌러 실행 파일을 선택합니다.
+   - 값을 비워 두면 `PATH`에서 `claude` 또는 `codex`를 찾습니다.
 4. 승인 없이 자동 진행하려면 `YOLO mode (auto accept for new agent sessions)`를 켭니다. Claude Code는 새 세션 시작 후 `Auto` 편집 모드로 전환하고, Codex는 새 세션을 `Auto Mode`로 시작합니다.
 5. `MCP server port`를 확인합니다. 기본값을 그대로 사용해도 됩니다.
 6. `Enable MCP integration`을 켜 둡니다. 이 옵션을 켜면 에이전트가 NetBeans의 열린 편집기, 진단 정보, 파일 열기, diff 열기 같은 IDE 도구를 사용할 수 있습니다.
@@ -194,7 +195,18 @@ SOX_AI_TOOL은 마크다운 파일과 계획 파일을 NetBeans 안에서 렌더
 
 이후 해당 프로젝트에서 `Open with SOX_AI_TOOL`을 실행하면 선택한 프로필이 기본값으로 사용됩니다.
 
-## 13. 권장 사용 흐름
+## 13. 프로젝트 스킬 문서
+
+작업 디렉터리에 `docs/SKILL.md` 파일이 있으면 SOX_AI_TOOL이 첫 프롬프트를 보낼 때 해당 내용을 세션 컨텍스트로 함께 전달합니다.
+
+- 적용 대상: Claude Code와 Codex 세션 모두
+- 적용 시점: 세션에서 첫 사용자 프롬프트를 전송할 때 한 번
+- 파일 위치: `<작업 디렉터리>\docs\SKILL.md`
+- 파일이 없거나 비어 있으면 아무 내용도 추가하지 않습니다.
+
+이 기능은 프로젝트별 도구 사용 규칙, 검증 절차, 로컬 스크립트 사용법 같은 내용을 LLM이 바로 참고하도록 하기 위한 기능입니다. 프롬프트 히스토리에는 사용자가 입력한 원문만 저장됩니다.
+
+## 14. 권장 사용 흐름
 
 처음 사용하는 프로젝트에서는 다음 흐름을 권장합니다.
 
@@ -205,7 +217,7 @@ SOX_AI_TOOL은 마크다운 파일과 계획 파일을 NetBeans 안에서 렌더
 5. 변경이 필요하면 diff를 확인하고 승인합니다.
 6. 작업이 끝나면 NetBeans에서 빌드 또는 테스트를 실행해 결과를 검증합니다.
 
-## 14. 문제 해결
+## 15. 문제 해결
 
 ### SOX_AI_TOOL 메뉴나 옵션이 보이지 않음
 
@@ -242,7 +254,7 @@ SOX_AI_TOOL은 마크다운 파일과 계획 파일을 NetBeans 안에서 렌더
 - 한글 채팅 입력과 터미널 출력을 위해 한글을 지원하는 고정폭 글꼴과 적절한 크기를 선택합니다.
 - Windows에서는 `D2Coding`, `Consolas`, `Malgun Gothic` 등을 사용할 수 있습니다.
 
-## 15. 제거
+## 16. 제거
 
 1. NetBeans에서 `Tools > Plugins`를 엽니다.
 2. `Installed` 탭에서 `AI Agent Bridge for NetBeans` 또는 `SOX_AI_TOOL` 관련 항목을 찾습니다.

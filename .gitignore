@@ -9,5 +9,7 @@ dist/
 *.nbm
 CLAUDE.md
 AGENTS.md
+tools/playwright/.pw-runtime/
+tools/playwright/.artifacts/
 
 

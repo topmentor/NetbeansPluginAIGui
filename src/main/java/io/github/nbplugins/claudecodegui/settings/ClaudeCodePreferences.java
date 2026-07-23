@@ -17,14 +17,14 @@ public final class ClaudeCodePreferences {
 
     /** Preference key: path to the {@code claude} CLI executable. */
     public static final String KEY_CLAUDE_EXECUTABLE_PATH = "claudeExecutablePath";
-    /** Default: empty — resolved from {@code PATH} at runtime. */
-    public static final String DEFAULT_CLAUDE_EXECUTABLE_PATH = "";
+    /** Default Windows npm global shim for Claude Code; empty on non-Windows platforms. */
+    public static final String DEFAULT_CLAUDE_EXECUTABLE_PATH = defaultNpmExecutable("claude");
     /** Preference key: which CLI backend to start for new sessions. */
     public static final String KEY_AGENT_BACKEND = "agentBackend";
     /** Preference key: path to the {@code codex} CLI executable. */
     public static final String KEY_CODEX_EXECUTABLE_PATH = "codexExecutablePath";
-    /** Default: empty — resolved from {@code PATH} at runtime. */
-    public static final String DEFAULT_CODEX_EXECUTABLE_PATH = "";
+    /** Default Windows npm global shim for Codex; empty on non-Windows platforms. */
+    public static final String DEFAULT_CODEX_EXECUTABLE_PATH = defaultNpmExecutable("codex");
     /** Preference key: Codex approval/sandbox preset. */
     public static final String KEY_CODEX_RUN_MODE = "codexRunMode";
     /** Default Codex mode: ask before command execution in workspace-write sandbox. */
@@ -45,15 +45,27 @@ public final class ClaudeCodePreferences {
     /** Ctrl+Enter key. */ public static final String CTRL_ENTER   = "CTRL_ENTER";
     /** Alt+Enter key. */ public static final String ALT_ENTER    = "ALT_ENTER";
 
-    /** Default key combo for sending the prompt (Ctrl+Enter). */
-    public static final String DEFAULT_SEND_KEY    = CTRL_ENTER;
-    /** Default key combo for inserting a newline (Enter). */
-    public static final String DEFAULT_NEWLINE_KEY = ENTER;
+    /** Default key combo for sending the prompt. Mirrors Claude Code's TUI. */
+    public static final String DEFAULT_SEND_KEY    = ENTER;
+    /** Default key combo for inserting a newline. */
+    public static final String DEFAULT_NEWLINE_KEY = SHIFT_ENTER;
+    /** Previous default send key, migrated automatically to the current default pair. */
+    private static final String LEGACY_DEFAULT_SEND_KEY = CTRL_ENTER;
+    /** Previous default newline key, migrated automatically to the current default pair. */
+    private static final String LEGACY_DEFAULT_NEWLINE_KEY = ENTER;
 
     private static final Logger LOG =
             Logger.getLogger(ClaudeCodePreferences.class.getName());
 
     private ClaudeCodePreferences() {}
+
+    private static String defaultNpmExecutable(String command) {
+        boolean isWindows = System.getProperty("os.name", "")
+                .toLowerCase(java.util.Locale.ROOT).contains("win");
+        if (!isWindows) return "";
+        return Path.of(System.getProperty("user.home"), "AppData", "Roaming",
+                "npm", command + ".cmd").toString();
+    }
 
     // -------------------------------------------------------------------------
     // claudeExecutablePath
@@ -206,6 +218,7 @@ public final class ClaudeCodePreferences {
      *         {@link #ALT_ENTER}
      */
     public static String getSendKey() {
+        migrateLegacyPromptKeyBindings();
         return NbPreferences.forModule(ClaudeCodePreferences.class)
                 .get(KEY_SEND_KEY, DEFAULT_SEND_KEY);
     }
@@ -227,6 +240,7 @@ public final class ClaudeCodePreferences {
      *         {@link #ALT_ENTER}
      */
     public static String getNewlineKey() {
+        migrateLegacyPromptKeyBindings();
         return NbPreferences.forModule(ClaudeCodePreferences.class)
                 .get(KEY_NEWLINE_KEY, DEFAULT_NEWLINE_KEY);
     }
@@ -239,6 +253,16 @@ public final class ClaudeCodePreferences {
     public static void setNewlineKey(String value) {
         NbPreferences.forModule(ClaudeCodePreferences.class)
                 .put(KEY_NEWLINE_KEY, validated(value, DEFAULT_NEWLINE_KEY));
+    }
+
+    private static void migrateLegacyPromptKeyBindings() {
+        java.util.prefs.Preferences prefs = NbPreferences.forModule(ClaudeCodePreferences.class);
+        String send = prefs.get(KEY_SEND_KEY, null);
+        String newline = prefs.get(KEY_NEWLINE_KEY, null);
+        if (LEGACY_DEFAULT_SEND_KEY.equals(send) && LEGACY_DEFAULT_NEWLINE_KEY.equals(newline)) {
+            prefs.put(KEY_SEND_KEY, DEFAULT_SEND_KEY);
+            prefs.put(KEY_NEWLINE_KEY, DEFAULT_NEWLINE_KEY);
+        }
     }
 
     // -------------------------------------------------------------------------

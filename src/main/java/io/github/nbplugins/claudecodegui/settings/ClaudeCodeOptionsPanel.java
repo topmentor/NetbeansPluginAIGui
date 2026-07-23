@@ -341,7 +341,8 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
         // --- executable path ---
         form.add(new JLabel("Claude CLI path:"), gbc(0, row, false));
         executablePathField = new JTextField(30);
-        executablePathField.setToolTipText("Leave empty to detect 'claude' from PATH");
+        executablePathField.setToolTipText(
+                "Default is the Windows npm global claude.cmd path; leave empty to detect 'claude' from PATH");
         form.add(executablePathField, gbcFill(1, row));
         JButton browseButton = new JButton("Browse\u2026");
         browseButton.addActionListener(e -> {
@@ -357,7 +358,8 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
 
         form.add(new JLabel("Codex CLI path:"), gbc(0, row, false));
         codexExecutablePathField = new JTextField(30);
-        codexExecutablePathField.setToolTipText("Leave empty to detect 'codex' from PATH");
+        codexExecutablePathField.setToolTipText(
+                "Default is the Windows npm global codex.cmd path; leave empty to detect 'codex' from PATH");
         form.add(codexExecutablePathField, gbcFill(1, row));
         JButton codexBrowseButton = new JButton("Browse\u2026");
         codexBrowseButton.addActionListener(e -> {
@@ -594,8 +596,8 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
                         : ClaudeCodePreferences.DEFAULT_CHOICE_MENU_FOCUS_MODE);
         ClaudeCodePreferences.setHangTimeoutSeconds((Integer) hangTimeoutSpinner.getValue());
         ClaudeCodePreferences.setMcpEnabled(mcpEnabledCheckBox.isSelected());
-        ClaudeCodePreferences.setSendKey(selectedValue(sendRadios));
-        ClaudeCodePreferences.setNewlineKey(selectedValue(newlineRadios));
+        ClaudeCodePreferences.setSendKey(selectedValue(sendRadios, ClaudeCodePreferences.DEFAULT_SEND_KEY));
+        ClaudeCodePreferences.setNewlineKey(selectedValue(newlineRadios, ClaudeCodePreferences.DEFAULT_NEWLINE_KEY));
         ClaudeCodePreferences.setTerminalFontName(pendingFontName);
         ClaudeCodePreferences.setTerminalFontSize(pendingFontSize);
 
@@ -634,11 +636,11 @@ public final class ClaudeCodeOptionsPanel extends JPanel {
         }
     }
 
-    private static String selectedValue(Map<String, JRadioButton> radios) {
+    private static String selectedValue(Map<String, JRadioButton> radios, String fallback) {
         for (Map.Entry<String, JRadioButton> e : radios.entrySet()) {
             if (e.getValue().isSelected()) return e.getKey();
         }
-        return ClaudeCodePreferences.DEFAULT_SEND_KEY;
+        return fallback;
     }
 
     private static DockMode dockModeFromCombo(javax.swing.JComboBox<?> combo) {
